@@ -1,190 +1,94 @@
-import {Devvit} from "@devvit/public-api";
-import {someRecurringTask} from "./handlers/scheduler.js";
-import {validateDiceRoll} from "./handlers/validators.js";
-import {DEFAULTS, HELP_TEXTS, LABELS, OPTIONS} from "./constants.js";
-import {formOnSubmit} from "./handlers/formSubmit.js";
-import {formActionPressed, loggedOutMenuItemPressed, memberMenuItemPressed, modMenuItemPressed} from "./handlers/menuPress.js";
-import {generalMenuItemPressed} from "./handlers/menuPress.js";
-import {onAppChanged, onCommentCreate, onCommentDelete, onCommentReport, onCommentSubmit, onCommentUpdate, onModAction, onModMail, onPostCreate, onPostDelete, onPostFlairUpdate, onPostReport, onPostSubmit, onPostUpdate} from "./handlers/triggers.js";
-import {CustomPostExample} from "./customPost/index.js";
+import {Devvit, SettingScope} from "@devvit/public-api";
+import {userFlairUpdater} from "./handlers/scheduler.js";
+import {onAppChanged, onModAction, onPostDelete, onPostSubmit} from "./handlers/triggers.js";
+import {KEYS, LABELS, HELP_TEXTS, DEFAULTS} from "./constants.js";
+import {validateFlairSharesPlaceholder} from "./handlers/validators.js";
 
 // Enable any Devvit features you might need.
 Devvit.configure({
     redditAPI: true,
     redis: true,
-    media: false,
-    http: false,
 });
-
-// Custom post stuff
-Devvit.addCustomPostType(CustomPostExample);
-Devvit.addMenuItem({
-    location: "subreddit",
-    label: LABELS.CUSTOM_POST_BUTTON,
-    description: HELP_TEXTS.CUSTOM_POST_BUTTON,
-    onPress: formActionPressed,
-});
-
-export const submitPostFormKey = Devvit.createForm(
-    {
-        fields: [
-            {
-                type: "string",
-                name: "title",
-                label: LABELS.CUSTOM_POST_TITLE,
-                helpText: HELP_TEXTS.CUSTOM_POST_TITLE,
-            },
-        ],
-        title: LABELS.FORM,
-        acceptLabel: LABELS.FORM_ACCEPT,
-        cancelLabel: LABELS.FORM_CANCEL,
-    },
-    formOnSubmit
-);
 
 // Set up the configuration field presented to the user for each installation (subreddit) of the app.
 Devvit.addSettings([
     {
-        type: "number",
-        name: "diceRoll",
-        label: LABELS.DICE_ROLL,
-        helpText: HELP_TEXTS.DICE_ROLL,
-        defaultValue: DEFAULTS.DICE_ROLL,
-        onValidate: validateDiceRoll,
-    },
-    {
+        name: KEYS.ACCEPTING_NEW_POSTS,
         type: "boolean",
-        name: "toggle",
-        label: LABELS.TOGGLE,
-        helpText: HELP_TEXTS.TOGGLE,
-        defaultValue: DEFAULTS.TOGGLE,
+        label: LABELS.ACCEPTING_NEW_POSTS,
+        helpText: HELP_TEXTS.ACCEPTING_NEW_POSTS,
+        defaultValue: DEFAULTS.ACCEPTING_NEW_POSTS,
+        scope: SettingScope.Installation,
     },
     {
-        type: "select",
-        name: "dropdownSelect",
-        label: LABELS.DROPDOWN_SELECT,
-        helpText: HELP_TEXTS.DROPDOWN_SELECT,
-        defaultValue: DEFAULTS.SELECT,
-        options: OPTIONS.SELECT,
-    },
-    {
-        type: "select",
-        name: "multiSelect",
-        label: LABELS.MULTI_SELECT,
-        helpText: HELP_TEXTS.MULTI_SELECT,
-        defaultValue: DEFAULTS.SELECT,
-        options: OPTIONS.SELECT,
-        multiSelect: true,
+        name: KEYS.SHARES_FACTOR,
+        type: "number",
+        label: LABELS.SHARES_FACTOR,
+        helpText: HELP_TEXTS.SHARES_FACTOR,
+        defaultValue: DEFAULTS.SHARES_FACTOR,
+        scope: SettingScope.Installation,
     },
     {
         type: "group",
-        label: LABELS.GROUP,
-        helpText: HELP_TEXTS.GROUP,
+        label: LABELS.FLAIR_SETTINGS,
         fields: [
             {
-                type: "string",
-                name: "shortText",
-                label: LABELS.SHORT_TEXT,
-                helpText: HELP_TEXTS.SHORT_TEXT,
+                name: KEYS.FLAIR_OVERWRITE,
+                type: "boolean",
+                label: LABELS.FLAIR_OVERWRITE,
+                helpText: HELP_TEXTS.FLAIR_OVERWRITE,
+                defaultValue: DEFAULTS.FLAIR_OVERWRITE,
+                scope: SettingScope.Installation,
             },
             {
-                type: "paragraph",
-                name: "longText",
-                label: LABELS.LONG_TEXT,
-                helpText: HELP_TEXTS.LONG_TEXT,
+                name: KEYS.FLAIR_TEMPLATE,
+                type: "string",
+                label: LABELS.FLAIR_TEMPLATE,
+                helpText: HELP_TEXTS.FLAIR_TEMPLATE,
+                defaultValue: DEFAULTS.FLAIR_TEMPLATE,
+                scope: SettingScope.Installation,
+            },
+            {
+                name: KEYS.FLAIR_TEXT,
+                type: "string",
+                label: LABELS.FLAIR_TEXT,
+                helpText: HELP_TEXTS.FLAIR_TEXT,
+                defaultValue: DEFAULTS.FLAIR_TEXT,
+                onValidate: validateFlairSharesPlaceholder,
+                scope: SettingScope.Installation,
+            },
+            {
+                name: KEYS.FLAIR_CSS,
+                type: "string",
+                label: LABELS.FLAIR_CSS,
+                helpText: HELP_TEXTS.FLAIR_CSS,
+                defaultValue: DEFAULTS.FLAIR_CSS,
+                scope: SettingScope.Installation,
             },
         ],
     },
 ]);
 
-// Set up the menu items added by the app.
-Devvit.addMenuItem({
-    location: "post",
-    label: LABELS.GENERAL_POST_ACTION,
-    description: HELP_TEXTS.GENERAL_POST_ACTION,
-    onPress: generalMenuItemPressed,
-});
-Devvit.addMenuItem({
-    location: ["subreddit", "post", "comment"],
-    label: LABELS.LOGGED_OUT_ACTION,
-    forUserType: "loggedOut",
-    onPress: loggedOutMenuItemPressed,
-});
-Devvit.addMenuItem({
-    location: ["subreddit", "post", "comment"],
-    label: LABELS.MOD_ACTION,
-    forUserType: "moderator",
-    onPress: modMenuItemPressed,
-});
-Devvit.addMenuItem({
-    location: ["subreddit", "post", "comment"],
-    label: LABELS.MEMBER_ACTION,
-    forUserType: "member",
-    onPress: memberMenuItemPressed,
-});
-
-// Define scheduler jobs
 Devvit.addSchedulerJob({
-    name: "someRecurringTask",
-    onRun: someRecurringTask,
+    name: "userFlairUpdater",
+    onRun: userFlairUpdater,
 });
 
-// AppInstall and AppUpgrade are useful for scheduling recurring actions.
 Devvit.addTrigger({
     events: ["AppInstall", "AppUpgrade"],
     onEvent: onAppChanged,
 });
 
-// Register any of the other triggers that you want to use. You can register multiple triggers for the same event handler.
-// These ones are here as examples, they could technically be combined into one trigger with the onTrigger function as their handler.
 Devvit.addTrigger({
     event: "PostSubmit",
     onEvent: onPostSubmit,
 });
-Devvit.addTrigger({
-    event: "PostCreate",
-    onEvent: onPostCreate,
-});
-Devvit.addTrigger({
-    event: "PostUpdate",
-    onEvent: onPostUpdate,
-});
+
 Devvit.addTrigger({
     event: "PostDelete",
     onEvent: onPostDelete,
 });
-Devvit.addTrigger({
-    event: "PostReport",
-    onEvent: onPostReport,
-});
-Devvit.addTrigger({
-    event: "PostFlairUpdate",
-    onEvent: onPostFlairUpdate,
-});
-Devvit.addTrigger({
-    event: "CommentSubmit",
-    onEvent: onCommentSubmit,
-});
-Devvit.addTrigger({
-    event: "CommentCreate",
-    onEvent: onCommentCreate,
-});
-Devvit.addTrigger({
-    event: "CommentUpdate",
-    onEvent: onCommentUpdate,
-});
-Devvit.addTrigger({
-    event: "CommentDelete",
-    onEvent: onCommentDelete,
-});
-Devvit.addTrigger({
-    event: "CommentReport",
-    onEvent: onCommentReport,
-});
-Devvit.addTrigger({
-    event: "ModMail",
-    onEvent: onModMail,
-});
+
 Devvit.addTrigger({
     event: "ModAction",
     onEvent: onModAction,
