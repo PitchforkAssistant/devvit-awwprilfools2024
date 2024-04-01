@@ -67,7 +67,10 @@ export async function updateUser (reddit: RedditAPIClient, redis: RedisClient, c
         currentSubname = (await reddit.getCurrentSubreddit()).name;
     }
     const shares = await updateUserShares(reddit, redis, userId, config.sharesFactor);
-    const user = await reddit.getUserById(userId);
+    const user = await reddit.getUserById(userId).catch(console.log);
+    if (!user) {
+        return;
+    }
     const userFlair = await user.getUserFlairBySubreddit(currentSubname);
     if (canChangeFlair(config, userFlair?.flairCssClass)) {
         console.log(`Shares updated for ${user.username} (${userId}), updating flair`);
