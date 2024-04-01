@@ -1,7 +1,7 @@
 import {AppInstall, AppUpgrade, ModAction, PostDelete, PostSubmit} from "@devvit/protos";
 import {TriggerContext} from "@devvit/public-api";
 import {startSingletonJob} from "devvit-helpers";
-import {setPost, userSeen} from "../helpers/redisHelpers.js";
+import {getUserFirstSeen, setPost, userSeen} from "../helpers/redisHelpers.js";
 import {updateUser} from "../helpers/sharesHelpers.js";
 import {getAppSettings} from "../helpers/settingsHelpers.js";
 
@@ -29,6 +29,10 @@ export async function onPostDelete ({author, subreddit}: PostDelete, context: Tr
         throw "PostSubmit event missing author or subreddit data";
     }
 
+    const hasBeenSeen = await getUserFirstSeen(context.redis, author.id);
+    if (!hasBeenSeen) {
+        return;
+    }
     console.log(`Updating due to deleted post by ${author.name} (${author.id})`);
     await updateUser(context.reddit, context.redis, await getAppSettings(context.settings), author.id, subreddit.name);
 }
@@ -38,6 +42,10 @@ export async function onModAction ({targetPost, subreddit, action}: ModAction, c
         return;
     }
 
+    const hasBeenSeen = await getUserFirstSeen(context.redis, targetPost.authorId);
+    if (!hasBeenSeen) {
+        return;
+    }
     console.log(`Updating due to mod action ${action} on post ${targetPost.id} by ${targetPost.authorId}`);
     await updateUser(context.reddit, context.redis, await getAppSettings(context.settings), targetPost.authorId, subreddit.name);
 }

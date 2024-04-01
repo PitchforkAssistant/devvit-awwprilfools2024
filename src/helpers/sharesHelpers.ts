@@ -13,6 +13,12 @@ import {AppSettings} from "./settingsHelpers.js";
 export async function updateUserShares (reddit: RedditAPIClient, redis: RedisClient, userId: string, sharesFactor: number): Promise<number> {
     console.log(`Updating shares for user ${userId}`);
     const storedPosts = await getUserPosts(redis, userId);
+
+    if (Object.keys(storedPosts).length === 0) {
+        console.log(`User ${userId} has no tracked posts, skipping`);
+        return 0;
+    }
+
     const newPosts: Record<string, number> = {};
     let scoreSum = 0;
     for (const [postId, storedScore] of Object.entries(storedPosts)) {
