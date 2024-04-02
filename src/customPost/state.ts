@@ -61,15 +61,8 @@ export class LeaderboardState {
     async fetchLeaderboard () {
         const leaderboardData = await getSharesLeaderboard(this.context.redis, this.config.leaderboardMinScore);
         const leaderboard: LeaderboardEntry[] = [];
-        for (const [i, {member, score}] of leaderboardData.entries()) {
-            let username = "[deleted]";
-            try {
-                const user = await this.context.reddit.getUserById(member);
-                username = user.username;
-            } catch (e) {
-                console.log(`Failed to get user ${member} from Reddit`, e);
-            }
-            leaderboard.push({id: member, username, shares: score, rank: i + 1});
+        for (const [i, {id, username, shares}] of leaderboardData.entries()) {
+            leaderboard.push({id, username, shares, rank: i + 1});
         }
         return leaderboard;
     }

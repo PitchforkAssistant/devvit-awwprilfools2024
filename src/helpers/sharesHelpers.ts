@@ -10,7 +10,7 @@ import {AppSettings} from "./settingsHelpers.js";
  * @param {number} sharesFactor Shares factor to multiply each post's score by.
  * @returns Total shares.
  */
-export async function updateUserShares (reddit: RedditAPIClient, redis: RedisClient, userId: string, sharesFactor: number): Promise<number> {
+export async function updateUserShares (reddit: RedditAPIClient, redis: RedisClient, userId: string, username: string, sharesFactor: number): Promise<number> {
     console.log(`Updating shares for user ${userId}`);
     const storedPosts = await getUserPosts(redis, userId);
 
@@ -45,7 +45,7 @@ export async function updateUserShares (reddit: RedditAPIClient, redis: RedisCli
 
     const shares = Math.floor(scoreSum * sharesFactor);
     console.log(`User ${userId} has ${shares} shares`);
-    await setUserShares(redis, userId, shares); // Update the user's total shares. We want a list of them in case we make a leaderboard or something.
+    await setUserShares(redis, userId, username, shares); // Update the user's total shares. We want a list of them in case we make a leaderboard or something.
 
     return shares;
 }
@@ -66,13 +66,13 @@ export async function updateUser (reddit: RedditAPIClient, redis: RedisClient, c
     if (!currentSubname) {
         currentSubname = (await reddit.getCurrentSubreddit()).name;
     }
-    const shares = await updateUserShares(reddit, redis, userId, config.sharesFactor);
     const user = await reddit.getUserById(userId).catch(() => {
         console.log("User not found, shadowbanned or deleted?");
     });
     if (!user) {
         return;
     }
+    const shares = await updateUserShares(reddit, redis, userId, user.username, config.sharesFactor);
     const userFlair = await user.getUserFlairBySubreddit(currentSubname);
     if (canChangeFlair(config, userFlair?.flairCssClass)) {
         console.log(`Shares updated for ${user.username} (${userId}), updating flair`);

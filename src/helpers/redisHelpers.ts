@@ -1,6 +1,6 @@
 import {ZMember} from "@devvit/protos";
 import {RedisClient} from "@devvit/public-api";
-import {isT3ID} from "@devvit/shared-types/tid.js";
+import {isT2ID, isT3ID} from "@devvit/shared-types/tid.js";
 
 /**
  * Sets the given post in Redis with the given score.
@@ -153,8 +153,8 @@ export async function userSeen (redis: RedisClient, userId: string, timestamp: n
  * @param {string} userId Full T2ID of the user.
  * @param {number} shares Number of shares to set for the user.
  */
-export async function setUserShares (redis: RedisClient, userId: string, shares: number) {
-    await redis.zAdd("userShares", {member: userId, score: shares});
+export async function setUserShares (redis: RedisClient, userId: string, username: string, shares: number) {
+    await redis.zAdd("shares", {member: `${userId}:${username}`, score: shares});
 }
 
 /**
@@ -164,14 +164,20 @@ export async function setUserShares (redis: RedisClient, userId: string, shares:
  * @param {number} notFoundShares Number of shares to return if the user is not found in Redis, defaults to 0.
  * @returns {Promise<number>} Number of shares the user has, or notFoundShares if the user is not found in Redis.
  */
-export async function getUserShares (redis: RedisClient, userId: string, notFoundShares: number = 0): Promise<number> {
+export async function getUserShares (redis: RedisClient, userId: string, username: string, notFoundShares: number = 0): Promise<number> {
     try {
-        const userShares = await redis.zScore("userShares", userId);
+        const userShares = await redis.zScore("shares", `${userId}:${username}`);
         return userShares;
     } catch (e) {
         console.log(`Attempted to get shares for untracked user ${userId}`, e);
         return notFoundShares;
     }
+}
+
+export type LeaderboardUser = {
+    id: string;
+    username: string;
+    shares: number;
 }
 
 /**
@@ -180,9 +186,16 @@ export async function getUserShares (redis: RedisClient, userId: string, notFoun
  * @param minShares Minimum number of shares to include in the leaderboard, defaults to 1.
  * @returns {Promise<ZMember[]>} ZMember array, where the member is the user ID and score is the number of shares.
  */
-export async function getSharesLeaderboard (redis: RedisClient, minShares: number = 1): Promise<ZMember[]> {
+export async function getSharesLeaderboard (redis: RedisClient, minShares: number = 1): Promise<LeaderboardUser[]> {
     try {
-        const leaderboard = await redis.zRange("userShares", minShares, Infinity, {by: "score", reverse: true});
+        const leaderboardData = await redis.zRange("shares", minShares, Infinity, {by: "score", reverse: true});
+        const leaderboard: LeaderboardUser[] = [];
+        for (const [, {member, score}] of leaderboardData.entries()) {
+            const [userId, username] = member.split(":");
+            if (isT2ID(userId) && username) {
+                leaderboard.push({id: userId, username, shares: score});
+            }
+        }
         return leaderboard;
     } catch (e) {
         console.warn("Failed to get shares leaderboard from Redis", e);
