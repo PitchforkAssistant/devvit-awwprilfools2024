@@ -71,6 +71,22 @@ Devvit.addSettings([
             },
         ],
     },
+    {
+        name: KEYS.LEADERBOARD_MIN_SCORE,
+        type: "number",
+        label: LABELS.LEADERBOARD_MIN_SCORE,
+        helpText: HELP_TEXTS.LEADERBOARD_MIN_SCORE,
+        defaultValue: DEFAULTS.LEADERBOARD_MIN_SCORE,
+        scope: SettingScope.Installation,
+    },
+    {
+        name: KEYS.LEADERBOARD_HELP_URL,
+        type: "string",
+        label: LABELS.LEADERBOARD_HELP_URL,
+        helpText: HELP_TEXTS.LEADERBOARD_HELP_URL,
+        defaultValue: DEFAULTS.LEADERBOARD_HELP_URL,
+        scope: SettingScope.Installation,
+    },
 ]);
 
 Devvit.addSchedulerJob({

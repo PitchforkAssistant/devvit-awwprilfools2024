@@ -17,7 +17,7 @@ export const SharesLeaderboardPost: CustomPostType = {
                             <text style="heading">$AWW Shareholders</text>
                         </vstack>
                         <button icon="help" onPress={() => {
-                            state.context.ui.navigateTo("https://www.reddit.com/r/aww/comments/1bsx0m7/following_in_reddits_tracks_raww_is_going_public/");
+                            state.context.ui.navigateTo(state.config.leaderboardHelpUrl);
                         }}></button>
                     </hstack>
                     <vstack alignment="middle center" padding="medium" gap="medium" grow>

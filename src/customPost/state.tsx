@@ -1,5 +1,6 @@
 import {Context, UseIntervalResult, UseStateResult} from "@devvit/public-api";
 import {getSharesLeaderboard} from "../helpers/redisHelpers.js";
+import {AppSettings, getAppSettings} from "../helpers/settingsHelpers.js";
 
 export type LeaderboardEntry = {
     id: string;
@@ -13,11 +14,14 @@ export class LeaderboardState {
     readonly leaderboardPage: UseStateResult<number>;
     readonly leaderboardPageSize: number = 7;
 
+    readonly appConfig: UseStateResult<AppSettings>;
+
     readonly refresher: UseIntervalResult;
 
     constructor (public context: Context) {
         this.leaderboardEntries = context.useState<LeaderboardEntry[]>(async () => this.fetchLeaderboard());
         this.leaderboardPage = context.useState(1);
+        this.appConfig = context.useState<AppSettings>(async () => getAppSettings(this.context.settings));
         this.refresher = context.useInterval(async () => this.updateLeaderboard(), 60000);
         this.refresher.start();
     }
@@ -28,6 +32,14 @@ export class LeaderboardState {
 
     set leaderboard (value: LeaderboardEntry[]) {
         this.leaderboardEntries[1](value);
+    }
+
+    get config (): AppSettings {
+        return this.appConfig[0];
+    }
+
+    set config (value: AppSettings) {
+        this.appConfig[1](value);
     }
 
     get page (): number {
@@ -47,7 +59,7 @@ export class LeaderboardState {
     }
 
     async fetchLeaderboard () {
-        const leaderboardData = await getSharesLeaderboard(this.context.redis, 1);
+        const leaderboardData = await getSharesLeaderboard(this.context.redis, this.config.leaderboardMinScore);
         const leaderboard: LeaderboardEntry[] = [];
         for (const [i, {member, score}] of leaderboardData.entries()) {
             let username = "[deleted]";

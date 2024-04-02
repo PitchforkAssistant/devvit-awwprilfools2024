@@ -7,9 +7,10 @@ export type AppSettings = {
     flairTemplate?: string;
     flairText: string;
     flairCss?: string;
+    leaderboardHelpUrl: string;
+    leaderboardMinScore: number;
 };
 
 export async function getAppSettings (settings: SettingsClient) {
-    // TODO: Test that this actually works as expected.
     return settings.getAll<AppSettings>();
 }

@@ -10,6 +10,8 @@ export const KEYS = {
     FLAIR_TEMPLATE: "flairTemplate",
     FLAIR_TEXT: "flairText",
     FLAIR_CSS: "flairCss",
+    LEADERBOARD_MIN_SCORE: "leaderboardMinScore",
+    LEADERBOARD_HELP_URL: "leaderboardHelpUrl",
 };
 
 export const LABELS = {
@@ -24,6 +26,8 @@ export const LABELS = {
     FORM: "Create Custom Post",
     FORM_ACCEPT: "Submit",
     FORM_CANCEL: "Cancel",
+    LEADERBOARD_MIN_SCORE: "Leaderboard Minimum Score",
+    LEADERBOARD_HELP_URL: "Leaderboard Help URL",
 };
 
 export const HELP_TEXTS = {
@@ -34,6 +38,8 @@ export const HELP_TEXTS = {
     FLAIR_TEXT: "The text to display on the flair, must contain the placeholder {{shares}}.",
     FLAIR_CSS: "The CSS class to apply to the flair.",
     CUSTOM_POST_TITLE: "The title to give to the leaderboard post.",
+    LEADERBOARD_MIN_SCORE: "The minimum score required to appear on the leaderboard.",
+    LEADERBOARD_HELP_URL: "The URL to link to when users click the help button on the leaderboard.",
 };
 
 export const ERRORS = {
@@ -50,6 +56,8 @@ export const DEFAULTS = {
     FLAIR_TEMPLATE: "",
     FLAIR_TEXT: ":stonks: {{shares}} share{{s}}",
     FLAIR_CSS: "april24",
+    LEADERBOARD_MIN_SCORE: 1,
+    LEADERBOARD_HELP_URL: "https://www.reddit.com/r/aww/comments/1bsx0m7/following_in_reddits_tracks_raww_is_going_public/",
 };
 
 export const newPostForm: Form = {
