@@ -10,18 +10,18 @@ export type LeaderboardEntry = {
 };
 
 export class LeaderboardState {
+    readonly appConfig: UseStateResult<AppSettings>;
+
     readonly leaderboardEntries: UseStateResult<LeaderboardEntry[]>;
     readonly leaderboardPage: UseStateResult<number>;
     readonly leaderboardPageSize: number = 7;
 
-    readonly appConfig: UseStateResult<AppSettings>;
-
     readonly refresher: UseIntervalResult;
 
     constructor (public context: Context) {
+        this.appConfig = context.useState<AppSettings>(async () => getAppSettings(this.context.settings));
         this.leaderboardEntries = context.useState<LeaderboardEntry[]>(async () => this.fetchLeaderboard());
         this.leaderboardPage = context.useState(1);
-        this.appConfig = context.useState<AppSettings>(async () => getAppSettings(this.context.settings));
         this.refresher = context.useInterval(async () => this.updateLeaderboard(), 60000);
         this.refresher.start();
     }

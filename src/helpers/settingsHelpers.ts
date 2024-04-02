@@ -7,8 +7,8 @@ export type AppSettings = {
     flairTemplate?: string;
     flairText: string;
     flairCss?: string;
-    leaderboardHelpUrl: string;
     leaderboardMinScore: number;
+    leaderboardHelpUrl: string;
 };
 
 export async function getAppSettings (settings: SettingsClient) {
