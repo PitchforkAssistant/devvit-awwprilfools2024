@@ -1,13 +1,17 @@
 import {Devvit, SettingScope} from "@devvit/public-api";
 import {userFlairUpdater} from "./handlers/scheduler.js";
 import {onAppChanged, onModAction, onPostDelete, onPostSubmit} from "./handlers/triggers.js";
-import {KEYS, LABELS, HELP_TEXTS, DEFAULTS} from "./constants.js";
+import {KEYS, LABELS, HELP_TEXTS, DEFAULTS, newPostForm} from "./constants.js";
 import {validateFlairSharesPlaceholder} from "./handlers/validators.js";
+import {formOnSubmit} from "./handlers/formSubmit.js";
+import {SharesLeaderboardPost} from "./customPost/index.js";
+import {formActionPressed} from "./handlers/menuPress.js";
 
 // Enable any Devvit features you might need.
 Devvit.configure({
     redditAPI: true,
     redis: true,
+    media: true,
 });
 
 // Set up the configuration field presented to the user for each installation (subreddit) of the app.
@@ -93,5 +97,19 @@ Devvit.addTrigger({
     event: "ModAction",
     onEvent: onModAction,
 });
+
+Devvit.addMenuItem({
+    label: "Create Leadboard Post",
+    forUserType: "moderator",
+    location: "subreddit",
+    onPress: formActionPressed,
+});
+
+export const submitPostFormKey = Devvit.createForm(
+    newPostForm,
+    formOnSubmit
+);
+
+Devvit.addCustomPostType(SharesLeaderboardPost);
 
 export default Devvit;

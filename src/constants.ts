@@ -1,6 +1,8 @@
 // Keeping all of the labels, help texts, error messages, and default values in one place makes keeps main.ts cleaner and makes them easier to change.
 // It also opens up the possibility of internationalization in the future.
 
+import {Form} from "@devvit/public-api";
+
 export const KEYS = {
     ACCEPTING_NEW_POSTS: "acceptingNewPosts",
     SHARES_FACTOR: "sharesFactor",
@@ -18,6 +20,10 @@ export const LABELS = {
     FLAIR_TEMPLATE: "Flair Template ID",
     FLAIR_TEXT: "Flair Text",
     FLAIR_CSS: "Flair CSS Class",
+    CUSTOM_POST_TITLE: "Leaderboard Post Title",
+    FORM: "Create Custom Post",
+    FORM_ACCEPT: "Submit",
+    FORM_CANCEL: "Cancel",
 };
 
 export const HELP_TEXTS = {
@@ -27,11 +33,14 @@ export const HELP_TEXTS = {
     FLAIR_TEMPLATE: "The ID of the flair template to apply to users.",
     FLAIR_TEXT: "The text to display on the flair, must contain the placeholder {{shares}}.",
     FLAIR_CSS: "The CSS class to apply to the flair.",
+    CUSTOM_POST_TITLE: "The title to give to the leaderboard post.",
 };
 
 export const ERRORS = {
     FLAIR_TEXT_EMPTY: "Flair text must not be empty.",
     FLAIR_TEXT_NO_PLACEHOLDER: "Flair text must contain the placeholder {{shares}}.",
+    CUSTOM_POST_NO_TITLE: "You did not provide a title for the post.",
+    CUSTOM_POST_FAILED: "An error occurred while creating the custom post.",
 };
 
 export const DEFAULTS = {
@@ -41,4 +50,18 @@ export const DEFAULTS = {
     FLAIR_TEMPLATE: "",
     FLAIR_TEXT: ":stonks: {{shares}} share{{s}}",
     FLAIR_CSS: "april24",
+};
+
+export const newPostForm: Form = {
+    fields: [
+        {
+            type: "string",
+            name: "title",
+            label: LABELS.CUSTOM_POST_TITLE,
+            helpText: HELP_TEXTS.CUSTOM_POST_TITLE,
+        },
+    ],
+    title: LABELS.FORM,
+    acceptLabel: LABELS.FORM_ACCEPT,
+    cancelLabel: LABELS.FORM_CANCEL,
 };

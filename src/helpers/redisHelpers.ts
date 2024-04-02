@@ -173,3 +173,19 @@ export async function getUserShares (redis: RedisClient, userId: string, notFoun
         return notFoundShares;
     }
 }
+
+/**
+ *
+ * @param {RedisClient} redis Instance of the Devvit's Redis client.
+ * @param minShares Minimum number of shares to include in the leaderboard, defaults to 1.
+ * @returns {Promise<ZMember[]>} ZMember array, where the member is the user ID and score is the number of shares.
+ */
+export async function getSharesLeaderboard (redis: RedisClient, minShares: number = 1): Promise<ZMember[]> {
+    try {
+        const leaderboard = await redis.zRange("userShares", minShares, Infinity, {by: "score", reverse: true});
+        return leaderboard;
+    } catch (e) {
+        console.warn("Failed to get shares leaderboard from Redis", e);
+        return [];
+    }
+}
