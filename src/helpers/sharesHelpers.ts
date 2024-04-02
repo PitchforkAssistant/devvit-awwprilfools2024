@@ -67,7 +67,9 @@ export async function updateUser (reddit: RedditAPIClient, redis: RedisClient, c
         currentSubname = (await reddit.getCurrentSubreddit()).name;
     }
     const shares = await updateUserShares(reddit, redis, userId, config.sharesFactor);
-    const user = await reddit.getUserById(userId).catch(console.log);
+    const user = await reddit.getUserById(userId).catch(() => {
+        console.log("User not found, shadowbanned or deleted?");
+    });
     if (!user) {
         return;
     }
