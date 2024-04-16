@@ -52,26 +52,16 @@ export async function getUserPosts (redis: RedisClient, authorId: string): Promi
     try {
         const redisPostsScan = await redis.zScan("posts", 0, `${authorId}:*`, Infinity);
         const userTrackedPosts: Record<string, number> = {};
-        // This is how it should ideally work, however the zScan function is bugged at the moment.
-        // redisPostsScan.members.forEach(member => {
-        //     console.log(member);
-        //     const [, postId] = member.member.split(":");
-        //     if (postId && isT3ID(postId)) { // zScan seems to be inserting empty members for some reason, this should filter those and any other invalid IDs out.
-        //         userTrackedPosts[postId] = member.score;
-        //     }
-        // });
-        // Instead the result we will get is this:
-        // {score: 0, member: memberhere}
-        // {score: 0, member: scoreofthepreviousmemberhere}
-        for (let i = 0; i < redisPostsScan.members.length; i += 2) {
-            const member = redisPostsScan.members[i].member;
-            const score = parseInt(redisPostsScan.members[i + 1].member);
-            const [, postId] = member.split(":");
-            if (postId && isT3ID(postId)) {
-                userTrackedPosts[postId] = score ? score : 0;
-                console.log(member, score);
+        console.log(redisPostsScan.members);
+
+        redisPostsScan.members.forEach(member => {
+            console.log(member);
+            const [, postId] = member.member.split(":");
+            if (postId && isT3ID(postId)) { // zScan seems to be inserting empty members for some reason, this should filter those and any other invalid IDs out.
+                userTrackedPosts[postId] = member.score;
             }
-        }
+        });
+
         return userTrackedPosts;
     } catch (e) {
         console.warn(`Failed to get posts for user ${authorId} from Redis`, e);
