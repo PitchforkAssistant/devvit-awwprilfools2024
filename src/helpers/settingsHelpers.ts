@@ -9,6 +9,7 @@ export type AppSettings = {
     flairCss?: string;
     leaderboardMinScore: number;
     leaderboardHelpUrl: string;
+    disableUpdates: boolean;
 };
 
 export async function getAppSettings (settings: SettingsClient) {

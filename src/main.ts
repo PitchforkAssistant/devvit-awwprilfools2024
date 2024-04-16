@@ -2,7 +2,7 @@ import {Devvit, SettingScope} from "@devvit/public-api";
 import {userFlairUpdater} from "./handlers/scheduler.js";
 import {onAppChanged, onModAction, onPostDelete, onPostSubmit} from "./handlers/triggers.js";
 import {KEYS, LABELS, HELP_TEXTS, DEFAULTS, newPostForm} from "./constants.js";
-import {validateFlairSharesPlaceholder} from "./handlers/validators.js";
+import {validateDisableUpdates, validateFlairSharesPlaceholder} from "./handlers/validators.js";
 import {formOnSubmit} from "./handlers/formSubmit.js";
 import {SharesLeaderboardPost} from "./customPost/index.js";
 import {formActionPressed} from "./handlers/menuPress.js";
@@ -85,6 +85,15 @@ Devvit.addSettings([
         label: LABELS.LEADERBOARD_HELP_URL,
         helpText: HELP_TEXTS.LEADERBOARD_HELP_URL,
         defaultValue: DEFAULTS.LEADERBOARD_HELP_URL,
+        scope: SettingScope.Installation,
+    },
+    {
+        name: KEYS.DISABLE_UPDATES,
+        type: "boolean",
+        label: LABELS.DISABLE_UPDATES,
+        helpText: HELP_TEXTS.DISABLE_UPDATES,
+        defaultValue: DEFAULTS.DISABLE_UPDATES,
+        onValidate: validateDisableUpdates,
         scope: SettingScope.Installation,
     },
 ]);

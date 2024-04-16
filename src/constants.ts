@@ -12,6 +12,7 @@ export const KEYS = {
     FLAIR_CSS: "flairCss",
     LEADERBOARD_MIN_SCORE: "leaderboardMinScore",
     LEADERBOARD_HELP_URL: "leaderboardHelpUrl",
+    DISABLE_UPDATES: "disableUpdates",
 };
 
 export const LABELS = {
@@ -28,6 +29,7 @@ export const LABELS = {
     FORM_CANCEL: "Cancel",
     LEADERBOARD_MIN_SCORE: "Leaderboard Minimum Score",
     LEADERBOARD_HELP_URL: "Leaderboard Help URL",
+    DISABLE_UPDATES: "Disable Score Updating",
 };
 
 export const HELP_TEXTS = {
@@ -40,6 +42,7 @@ export const HELP_TEXTS = {
     CUSTOM_POST_TITLE: "The title to give to the leaderboard post.",
     LEADERBOARD_MIN_SCORE: "The minimum score required to appear on the leaderboard.",
     LEADERBOARD_HELP_URL: "The URL to link to when users click the help button on the leaderboard.",
+    DISABLE_UPDATES: "If this is enabled, the app will no longer update user scores (with the exception of when users delete their posts).",
 };
 
 export const ERRORS = {
@@ -58,6 +61,7 @@ export const DEFAULTS = {
     FLAIR_CSS: "april24",
     LEADERBOARD_MIN_SCORE: 1,
     LEADERBOARD_HELP_URL: "https://www.reddit.com/r/aww/comments/1bsx0m7/following_in_reddits_tracks_raww_is_going_public/",
+    DISABLE_UPDATES: false,
 };
 
 export const newPostForm: Form = {

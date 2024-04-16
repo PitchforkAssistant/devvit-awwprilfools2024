@@ -6,6 +6,12 @@ import {getAppSettings} from "../helpers/settingsHelpers.js";
 export async function userFlairUpdater (event: ScheduledJobEvent, context: Context) {
     console.log(`userFlairUpdater job ran at ${new Date().toISOString()}\nevent:\n${JSON.stringify(event)}\ncontext:\n${JSON.stringify(context)}`);
     const config = await getAppSettings(context.settings);
+
+    if (config.disableUpdates) {
+        console.log("Updates are disabled, skipping userFlairUpdater job (this should already be turned off)");
+        return;
+    }
+
     const currentSubname = (await context.reddit.getCurrentSubreddit()).name;
 
     const queuedUsers = await getQueue(context.redis);

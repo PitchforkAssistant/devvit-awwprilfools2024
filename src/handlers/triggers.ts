@@ -1,6 +1,6 @@
-import {AppInstall, AppUpgrade, ModAction, PostDelete, PostSubmit} from "@devvit/protos";
+import {AppInstall, AppUpgrade, ModAction, PostDelete, PostSubmit, EventSource} from "@devvit/protos";
 import {TriggerContext} from "@devvit/public-api";
-import {startSingletonJob} from "devvit-helpers";
+import {cancelExistingJobs, startSingletonJob} from "devvit-helpers";
 import {getUserFirstSeen, setPost, userSeen} from "../helpers/redisHelpers.js";
 import {updateUser} from "../helpers/sharesHelpers.js";
 import {getAppSettings} from "../helpers/settingsHelpers.js";
@@ -24,7 +24,13 @@ export async function onPostSubmit ({post, author, subreddit}: PostSubmit, conte
     await updateUser(context.reddit, context.redis, config, author.id, subreddit.name);
 }
 
-export async function onPostDelete ({author, subreddit}: PostDelete, context: TriggerContext) {
+export async function onPostDelete ({author, subreddit, source}: PostDelete, context: TriggerContext) {
+    const config = await getAppSettings(context.settings);
+    if (config.disableUpdates && source !== EventSource.USER) {
+        // We don't want to update the user if updates are off, except when the user deletes their own post (to provide a way to be removed from the leaderboard).
+        return;
+    }
+
     if (!author || !subreddit || !author.id || !subreddit.name) {
         throw "PostSubmit event missing author or subreddit data";
     }
@@ -38,6 +44,11 @@ export async function onPostDelete ({author, subreddit}: PostDelete, context: Tr
 }
 
 export async function onModAction ({targetPost, subreddit, action}: ModAction, context: TriggerContext) {
+    const config = await getAppSettings(context.settings);
+    if (config.disableUpdates) {
+        return;
+    }
+
     if (!targetPost || !subreddit || !targetPost.authorId || !subreddit.name) {
         return;
     }
@@ -51,6 +62,12 @@ export async function onModAction ({targetPost, subreddit, action}: ModAction, c
 }
 
 export async function onAppChanged (event: AppInstall | AppUpgrade, context: TriggerContext) {
+    const config = await getAppSettings(context.settings);
+    if (config.disableUpdates) {
+        await cancelExistingJobs(context.scheduler, "userFlairUpdater");
+        return;
+    }
+
     try {
         await startSingletonJob(context.scheduler, "userFlairUpdater", "* * * * *", {});
     } catch (e) {
